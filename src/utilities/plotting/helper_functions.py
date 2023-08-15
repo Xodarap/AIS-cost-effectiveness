@@ -641,14 +641,16 @@ def formatted_markdown_table_cost_effectiveness(
             "target_budget",
             "Benefit (counterfactual expected QARYs)",
             "Cost-effectiveness (QARYs per $1M)",
-        ]
+            
+        ] +
+        list(set(param_names) - set(["target_budget", "qarys", "qarys_cf"]))
     ]
     df_formatted = df_result.applymap(formatting_function)
     df_formatted.columns = [
         "Cost (USD)",
         "Benefit (counterfactual expected QARYs)",
         "Cost-effectiveness (QARYs per $1M)",
-    ]
+    ] + list(set(param_names) - set(["target_budget", "qarys", "qarys_cf"]))
     df_formatted.index.name = "Program"
     df_formatted.index = df_formatted.index.map(
         lambda label: prettify_label(

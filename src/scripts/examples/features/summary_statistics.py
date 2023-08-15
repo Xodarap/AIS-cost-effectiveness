@@ -27,6 +27,7 @@ import utilities.plotting.helper_functions as help  # for tables
 # Common python packages
 import pandas as pd  # for reading csv
 import numpy as np  # for sorting arrays
+import itertools
 
 # Simulations
 from squigglepy.numbers import K, M
@@ -62,15 +63,34 @@ Compute summary statistics
 means = {}
 for program, df in df_params.items():
     means[program] = df.mean()
+print(f"years: {means['tdc']['years_until_phd_phd_cf']}")
+# print(df_params['tdc'].keys())
+# print(df_functions['tdc'].keys())
 
+participant_types = ["contender", "attendee"]
+researcher_types = ["_professor","_scientist","_engineer","_phd"]
+undergrad_types = ["_via_phd", "_not_via_phd", ""]
+relevance_keys = set(["research_relevance_over_t_" + participant_type + researcher_type + undergrad_type
+                  for participant_type, researcher_type, undergrad_type 
+                  in itertools.product(participant_types, researcher_types, undergrad_types)])
+# print(f'Found {(relevance_keys)} keys for relevance')
+for program, df in df_functions.items():
+    found_keys = relevance_keys & set(df.keys())
+    means[program]['relevance'] = np.mean([df[key].mean() for key in found_keys])
+    means[program]['relevance_cf'] = np.mean([df[key + '_cf'].mean() for key in found_keys])
+
+    print(f'Found {len(found_keys)} keys for {program}')
+
+
+print(f"relevance: {means['tdc']['relevance']}")
 # Create a DataFrame with parameter means for each program
 df_params_means = pd.DataFrame(means)
 df_params_means.reset_index(inplace=True)
 df_params_means.rename(columns={"index": "parameter"}, inplace=True)
-
+# print(df_params_means['tdc']['target_budget'])
 # Specify the parameter names for the cost-effectiveness summary
-param_names_cost_effectiveness = ["target_budget", "qarys", "qarys_cf"]
-
+param_names_cost_effectiveness = ["target_budget", "qarys", "qarys_cf", "relevance", "relevance_cf"]
+print(f'filter: {df_params_means[df_params_means["parameter"].isin(param_names_cost_effectiveness)]}')
 # Generate a formatted markdown table for cost-effectiveness summary
 help.formatted_markdown_table_cost_effectiveness(
     df_params_means, param_names_cost_effectiveness, help.format_number
