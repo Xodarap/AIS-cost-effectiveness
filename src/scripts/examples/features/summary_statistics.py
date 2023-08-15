@@ -64,6 +64,8 @@ means = {}
 for program, df in df_params.items():
     means[program] = df.mean()
 print(f"years: {means['tdc']['years_until_phd_phd_cf']}")
+print(f'"mean_ability": {[k for k in means["tdc"].keys() if k.startswith("mean_ability")]}')
+print(f'"n_scientist_equivalent_attendee": {means["tdc"]["n_scientist_equivalent_contender"]}')
 # print(df_params['tdc'].keys())
 # print(df_functions['tdc'].keys())
 
@@ -79,7 +81,11 @@ for program, df in df_functions.items():
     means[program]['relevance'] = np.mean([df[key].mean() for key in found_keys])
     means[program]['relevance_cf'] = np.mean([df[key + '_cf'].mean() for key in found_keys])
 
-    print(f'Found {len(found_keys)} keys for {program}')
+for program, df in df_params.items():
+    means[program]['n_scientist_equivalent_attendee'] = df.get("n_scientist_equivalent_contender", pd.Series([0])).mean() + df.get("n_scientist_equivalent_attendee", pd.Series([0])).mean()
+    if 'n_scientist_equivalent_contender' in df.keys():
+        print(f'Found n_scientist_equivalent_contender for {df["n_scientist_equivalent_contender"]}')
+    # print(f'Found {len(found_keys)} keys for {program}')
 
 
 print(f"relevance: {means['tdc']['relevance']}")
@@ -89,7 +95,7 @@ df_params_means.reset_index(inplace=True)
 df_params_means.rename(columns={"index": "parameter"}, inplace=True)
 # print(df_params_means['tdc']['target_budget'])
 # Specify the parameter names for the cost-effectiveness summary
-param_names_cost_effectiveness = ["target_budget", "qarys", "qarys_cf", "relevance", "relevance_cf"]
+param_names_cost_effectiveness = ["target_budget", "qarys", "qarys_cf", "relevance", "relevance_cf", "n_scientist_equivalent_attendee"]
 print(f'filter: {df_params_means[df_params_means["parameter"].isin(param_names_cost_effectiveness)]}')
 # Generate a formatted markdown table for cost-effectiveness summary
 help.formatted_markdown_table_cost_effectiveness(
